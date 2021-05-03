@@ -14,7 +14,7 @@ function errorOutput(err, res) {
   if (err.message === 'invalidCardId') {
     res.status(NOT_FOUND).send({ message: 'Карточка не найдена' });
     return;
-  } res.status(INTERNAL_SERVER_ERROR).send({ message: 'Произошла ошибка' });
+  } res.status(INTERNAL_SERVER_ERROR).send({ message: 'На сервере произошла ошибка' });
 }
 
 module.exports = { errorOutput };
