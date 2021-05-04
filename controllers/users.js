@@ -33,8 +33,8 @@ module.exports.updateUserInfo = (req, res) => {
 };
 
 module.exports.updateAvatar = (req, res) => {
-  const avatar = req.body;
-  User.findByIdAndUpdate(req.user._id, avatar, {
+  const { avatar }  = req.body;
+  User.findByIdAndUpdate(req.user._id, { avatar }, {
     new: true,
     runValidators: true,
   })
