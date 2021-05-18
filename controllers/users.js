@@ -15,10 +15,6 @@ module.exports.getUser = (req, res) => {
 };
 
 module.exports.createUser = (req, res, next) => {
-  const {
-    name, about, avatar, email,
-  } = req.body;
-
   User.findById(req.user._id)
   .orFail(new Error('NotFound'))
   .then((user) => {
@@ -41,8 +37,6 @@ module.exports.createUser = (req, res, next) => {
 };
 
 module.exports.login = (req, res, next) => {
-  const { email, password } = req.body;
-
   User.findByIdAndUpdate(
     req.user._id,
     {
