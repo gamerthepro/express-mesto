@@ -8,6 +8,11 @@ const cards = require('./routes/cards');
 const { PORT = 3000 } = process.env;
 const app = express();
 
+const {
+  createUser,
+  login,
+} = require('./controllers/users');
+
 app.use(bodyParser.json());
 
 mongoose.connect('mongodb://localhost:27017/mestodb', {
@@ -23,6 +28,9 @@ app.use((req, res, next) => {
 
   next();
 });
+
+app.use('/signin', login);
+app.use('/signup', createUser);
 
 app.use('/users', users);
 app.use('/cards', cards);
