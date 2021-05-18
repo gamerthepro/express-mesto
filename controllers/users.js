@@ -1,12 +1,6 @@
 const User = require('../models/user');
 const { errorOutput } = require('../utils/utils');
 
-const { BadRequestError } = require('../errors/400-BadRequestError');
-const { NotFoundError } = require('../errors/404-NotFoundError');
-const { UnauthorizedError } = require('../errors/401-UnauthorizedError');
-const { InternalServerError } = require('../errors/500-InternalServerError');
-const { ConflictError } = require('../errors/409-ConflictError');
-
 module.exports.getUsers = (req, res) => {
   User.find({})
     .then((users) => res.send({ data: users }))
@@ -25,39 +19,45 @@ module.exports.createUser = (req, res, next) => {
     name, about, avatar, email,
   } = req.body;
 
-  bcrypt.hash(req.body.password, 10)
-    .then((hash) => User.create({
-      name, about, avatar, email, password: hash,
-    }))
-    .then((user) => res
-      .status(200)
-      .send({ data: { _id: user._id, email: user.email } }))
-    .catch((err) => errorOutput(err, res))
-    .catch(next);
+  User.findById(req.user._id)
+  .orFail(new Error('NotFound'))
+  .then((user) => {
+    if (!user) {
+      throw new BadRequestError('Переданы некорректные данные');
+    } else {
+      res.status(200).send({ user });
+    }
+  }).catch((err) => {
+    if (err.kind === 'ObjectId') {
+      throw new BadRequestError('Переданы некорректные данные');
+    } else if (err.name === 'CastError') {
+      throw new BadRequestError('Переданы некорректные данные');
+    } else if (err.message === 'NotFound') {
+      throw new NotFoundError('Данные не найдены');
+    }
+    next(err);
+  })
+  .catch(next);
 };
 
 module.exports.login = (req, res, next) => {
   const { email, password } = req.body;
 
-  return User.findUserByCredentials(email, password)
-    .then((user) => {
-      const token = jwt.sign({ _id: user._id }, NODE_ENV === 'production' ? JWT_SECRET : 'super-secret', { expiresIn: '7d' });
-      const data = {
-        _id: user._id,
-        name: user.name,
-        about: user.about,
-        avatar: user.avatar,
-        email: user.email,
-      };
-      res
-        .status(200)
-        .send({ data, token });
-    })
-    .catch((err) => {
-      res
-        .status(401)
-        .send({ message: err.message });
-    });
+  User.findByIdAndUpdate(
+    req.user._id,
+    {
+      name: req.body.name,
+      about: req.body.about,
+    },
+    {
+      runValidators: true,
+      new: true,
+    },
+  )
+    .orFail(new Error('NotFound'))
+    .then((updatedUser) => res.send({ updatedUser }))
+    .catch((err) => handleErr(err))
+    .catch(next);
 };
 
 module.exports.updateUserInfo = (req, res) => {
