@@ -72,6 +72,28 @@ module.exports.login = (req, res, next) => {
   .catch(next);
 };
 
+module.exports.getCurrentUser = (req, res, next) => {
+  User.findById(req.user._id)
+    .orFail(new Error('NotFound'))
+    .then((user) => {
+      if (!user) {
+        throw new BadRequestError('Переданы некорректные данные');
+      } else {
+        res.status(200).send({ user });
+      }
+    }).catch((err) => {
+      if (err.kind === 'ObjectId') {
+        throw new BadRequestError('Переданы некорректные данные');
+      } else if (err.name === 'CastError') {
+        throw new BadRequestError('Переданы некорректные данные');
+      } else if (err.message === 'NotFound') {
+        throw new NotFoundError('Данные не найдены');
+      }
+      next(err);
+    })
+    .catch(next);
+}
+
 module.exports.updateUserInfo = (req, res) => {
   const { name, about } = req.body;
   User.findByIdAndUpdate(req.user._id, { name, about }, {
