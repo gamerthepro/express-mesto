@@ -16,6 +16,8 @@ const {
 } = require('./controllers/users');
 
 app.use(bodyParser.json());
+app.use(bodyParser.json());
+app.use(bodyParser.urlencoded({ extended: true }));
 
 mongoose.connect('mongodb://localhost:27017/mestodb', {
   useUnifiedTopology: true,
@@ -23,7 +25,6 @@ mongoose.connect('mongodb://localhost:27017/mestodb', {
   useCreateIndex: true,
   useFindAndModify: false,
 });
-
 
 app.use('/signin', login);
 app.use('/signup', createUser);
