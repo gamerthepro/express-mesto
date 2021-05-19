@@ -19,4 +19,4 @@ module.exports.handleAuthorization = (req, res, next) => {
   req.user = payload;
 
   next();
-}
+};
