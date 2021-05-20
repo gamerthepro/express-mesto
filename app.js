@@ -8,14 +8,15 @@ const users = require('./routes/users');
 const cards = require('./routes/cards');
 
 const { handleAuthorization } = require('./middlewares/auth');
-
-const { PORT = 3000 } = process.env;
-const app = express();
+const { requestLogger, errorLogger } = require('./middlewares/logger');
 
 const {
   createUser,
   login,
 } = require('./controllers/users');
+
+const { PORT = 3000 } = process.env;
+const app = express();
 
 app.use(bodyParser.json());
 app.use(bodyParser.json());
@@ -27,6 +28,8 @@ mongoose.connect('mongodb://localhost:27017/mestodb', {
   useCreateIndex: true,
   useFindAndModify: false,
 });
+
+app.use(requestLogger);
 
 app.use('/signin', celebrate({
   body: Joi.object().keys({
@@ -50,6 +53,10 @@ app.use('/cards', handleAuthorization, cards);
 app.use((req, res) => {
   res.status(404).send({ message: 'Запрашиваемый ресурс не найден' });
 });
+
+app.use(errorLogger);
+
+app.use(errors());
 
 app.listen(PORT, () => {
   console.log(`Server launched sucesfully! App listening on port: ${PORT}`);
