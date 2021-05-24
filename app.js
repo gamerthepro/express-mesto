@@ -7,6 +7,7 @@ const { celebrate, Joi } = require('celebrate');
 const { errors } = require('celebrate');
 const users = require('./routes/users');
 const cards = require('./routes/cards');
+const notFoundRoutes = require('./routes/notFound');
 
 const { handleAuthorization } = require('./middlewares/auth');
 const { requestLogger, errorLogger } = require('./middlewares/logger');
@@ -51,8 +52,10 @@ app.post('/signup', celebrate({
 
 app.use('/users', handleAuthorization, users);
 app.use('/cards', handleAuthorization, cards);
-app.use((req, res) => {
-  res.status(404).send({ message: 'Запрашиваемый ресурс не найден' });
+app.use('*', notFoundRoutes);
+
+app.use((err, req, res, next) => {
+  res.status(err.statusCode).send({ message: err.message });
 });
 
 app.use(errorLogger);

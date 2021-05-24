@@ -19,28 +19,6 @@ module.exports.getUsers = (req, res, next) => {
     .catch(next);
 };
 
-module.exports.getUser = (req, res, next) => {
-  User.findById(req.params._id)
-    .orFail(() => new Error('invalidUserId'))
-    .then((user) => {
-      if (!user) {
-        throw new BadRequestError('Переданы некорректные данные');
-      } else {
-        res.status(200).send({ user });
-      }
-    }).catch((err) => {
-      if (err.kind === 'ObjectId') {
-        throw new BadRequestError('Переданы некорректные данные');
-      } else if (err.name === 'CastError') {
-        throw new BadRequestError('Переданы некорректные данные');
-      } else if (err.message === 'NotFound') {
-        throw new NotFoundError('Данные не найдены');
-      }
-      next(err);
-    })
-    .catch(next);
-};
-
 module.exports.createUser = (req, res, next) => {
   bcrypt.hash(req.body.password, 10)
     .then((hash) => User.create({
