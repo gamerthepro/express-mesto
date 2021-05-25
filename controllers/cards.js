@@ -16,9 +16,14 @@ module.exports.getCards = (req, res, next) => {
 };
 
 module.exports.createCard = (req, res, next) => {
-  const { name, link } = req.body;
-  Card.create({ name, link, owner: req.user._id })
-    .then((card) => res.send({ data: card }))
+  Card.create({
+    name: req.body.name,
+    link: req.body.link,
+    owner: req.user._id,
+    likes: [],
+    createdAt: Date.now(),
+  })
+    .then((card) => { res.send({ card }); })
     .catch((err) => {
       if (err.name === 'ValidationError') {
         throw new BadRequestError('Переданы некорректные данные для создания карточки');
@@ -73,7 +78,7 @@ module.exports.likeCard = (req, res, next) => {
   )
     .orFail(() => new Error('invalidCardId'))
     .then((likedCard) => res.send({ likedCard }))
-    .catch((err) => handleErr(err))
+    .catch((err) => errorOutput(err, res))
     .catch(next);
 }
 
@@ -85,6 +90,6 @@ module.exports.dislikeCard = (req, res, next) => {
   )
     .orFail(() => new Error('invalidCardId'))
     .then((dislikedCard) => res.send({ dislikedCard }))
-    .catch((err) => handleErr(err))
+    .catch((err) => errorOutput(err, res))
     .catch(next);
 };

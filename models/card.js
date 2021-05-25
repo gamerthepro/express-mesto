@@ -10,6 +10,12 @@ const cardSchema = new mongoose.Schema({
   link: {
     type: String,
     required: true,
+    validate: {
+      validator(v) {
+        return /^(http|https):\/\/[0-9\-a-zA-Z0-9]+?\.[a-zA-Z0-9]+?/.test(v);
+      },
+      message: 'Неправильный формат ссылки',
+    },
   },
   owner: {
     required: true,
@@ -17,9 +23,8 @@ const cardSchema = new mongoose.Schema({
     ref: 'user',
   },
   likes: [{
-    type: mongoose.Schema.Types.ObjectId,
+    type: [mongoose.Schema.Types.ObjectId],
     default: [],
-    ref: 'user',
   }],
   createdAt: {
     type: Date,
